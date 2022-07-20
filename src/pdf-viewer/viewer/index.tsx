@@ -12,8 +12,6 @@ import matrixExt from "../helper/matrix-ext";
 import pdfRender from "../helper/pdf-render";
 import * as math from "mathjs";
 
-// console.log(PDFCursorTools);
-
 function calculateModelTransform(sheetModelBounds, pdfPageWidth) {
   var scale = pdfPageWidth / sheetModelBounds.width;
 
@@ -30,7 +28,9 @@ function calculateModelTransform(sheetModelBounds, pdfPageWidth) {
 
 const pdfFileURL =
   "https://d1.music.126.net/dmusic/obj/w5zCg8OAw6HDjzjDgMK_/15834321051/c5d1/b45c/1805/651766d32ded09ad74166e24aa2cbed9.pdf?download=1.pdf";
-const CSS_UNITS = 96.0 / 72.0;
+
+const containerWidth = 842;
+const containerHeight = 595;
 
 export default function Viewer() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -40,6 +40,7 @@ export default function Viewer() {
   const pdfPageViewRef = useRef(null);
   const pdfPageRef = useRef(null);
   const modelTransformRef = useRef(null);
+  const scaleRef = useRef(1);
 
   const sheetBoundsRef = useRef({});
 
@@ -51,11 +52,11 @@ export default function Viewer() {
       (pdfDocument) => {
         pdfDocument.getPage(1).then(function (pdfPage) {
           let eventBus = new PDFJSViewer.EventBus();
-          const tool = new PDFCursorTools({
-            container: containerRef.current,
-            eventBus,
-            cursorToolOnLoad: 1,
-          });
+          // const tool = new PDFCursorTools({
+          //   container: containerRef.current,
+          //   eventBus,
+          //   cursorToolOnLoad: 1,
+          // });
           // tool.switchTool(1);
           var viewport = pdfPage.getViewport({ scale: 1 });
           var bounds = initSheetBounds(pdfPage);
@@ -69,10 +70,21 @@ export default function Viewer() {
             eventBus
           );
 
+          // pdfPageViewRef.current.div.style.position = "absolute";
+
           pdfPageRef.current = pdfPage;
-          // var transform = matrixZoomToFit();
-          // setViewTransform(transform);
-          pdfPageViewRef.current.draw();
+          // debugger;
+          var transform = matrixZoomToFit();
+          // debugger;
+          pdfRender.transformPdfPageView(
+            pdfPageRef.current,
+            pdfPageViewRef.current,
+            transform,
+            containerWidth,
+            containerHeight
+          );
+          setViewTransform(transform);
+          // pdfPageViewRef.current.draw();
         });
       },
       (reason) => {
@@ -112,18 +124,23 @@ export default function Viewer() {
 
   function matrixZoomToFit() {
     // TODO: consider issues bounds
-    var bounds = sheetBoundsRef.current;
+    var bounds = matrixExt.transformBounds(
+      modelTransformRef.current,
+      sheetBoundsRef.current
+    );
     bounds = matrixExt.transformBounds(modelTransformRef.current, bounds);
     var boundsAspect = bounds.width / bounds.height;
-    var viewerAspect = 600 / 400;
+    var viewerAspect = containerWidth / containerHeight;
     var scale =
-      boundsAspect < viewerAspect ? 400 / bounds.height : 600 / bounds.width;
+      boundsAspect < viewerAspect
+        ? containerHeight / bounds.height
+        : containerWidth / bounds.width;
 
     var boundsCenterX = bounds.x + bounds.width / 2;
     var boundsCenterY = bounds.y + bounds.height / 2;
 
-    var viewerCenterX = 600 / 2;
-    var viewerCenterY = 400 / 2;
+    var viewerCenterX = containerWidth / 2;
+    var viewerCenterY = containerHeight / 2;
 
     return math
       .chain(
@@ -138,14 +155,6 @@ export default function Viewer() {
       .done();
   }
 
-  const { width, height } = useMemo(() => {
-    if (!pdfPageViewRef.current) return { width: 0, height: 0 };
-    return {
-      width: pdfPageViewRef.current.div.clientWidth,
-      height: pdfPageViewRef.current.div.clientHeight,
-    };
-  }, [pdfPageViewRef.current]);
-
   const center = () => {
     setViewTransform(matrixZoomToFit());
   };
@@ -153,14 +162,22 @@ export default function Viewer() {
   const zoomIn = () => {
     if (!sheetLoaded) return;
     let scale = 1 / 0.75;
-    let fixPt = [width / 2, height / 2, 0];
+    let fixPt = [
+      pdfPageViewRef.current.div.clientWidth / 2,
+      pdfPageViewRef.current.div.clientHeight / 2,
+      0,
+    ];
     zoom(scale, fixPt);
   };
 
   const zoomOut = () => {
     if (!sheetLoaded) return;
     let scale = 0.75;
-    let fixPt = [width / 2, height / 2, 0];
+    let fixPt = [
+      pdfPageViewRef.current.div.clientWidth / 2,
+      pdfPageViewRef.current.div.clientHeight / 2,
+      0,
+    ];
     zoom(scale, fixPt);
   };
   const zoom = (scale, fixPt) => {
@@ -187,8 +204,8 @@ export default function Viewer() {
       pdfPageRef.current,
       pdfPageViewRef.current,
       transform,
-      width,
-      height
+      pdfPageViewRef.current.div.clientWidth,
+      pdfPageViewRef.current.div.clientHeight
     );
   };
 
@@ -201,6 +218,39 @@ export default function Viewer() {
       event.preventDefault();
     };
     containerRef.current.addEventListener("wheel", onWheel);
+  }, []);
+
+  function translate(deltaX, deltaY) {
+    // debugger;
+    var translateMtx = matrixExt.fromTranslate(deltaX, deltaY);
+    updateView(translateMtx);
+  }
+
+  useEffect(() => {
+    let startX, startY;
+    const onMousedown = (event) => {
+      // event.preventDefault();
+      startX = event.pageX;
+      startY = event.pageY;
+      document.body.addEventListener("mousemove", onMouseMove);
+      document.body.addEventListener("mouseup", onMouseUp);
+    };
+
+    const onMouseUp = () => {
+      document.body.removeEventListener("mousemove", onMouseMove);
+      document.body.removeEventListener("mouseup", onMouseUp);
+    };
+
+    const onMouseMove = (event) => {
+      var deltaX = event.pageX - startX;
+      var deltaY = event.pageY - startY;
+
+      translate(deltaX, deltaY);
+
+      startX = event.pageX;
+      startY = event.pageY;
+    };
+    containerRef.current?.addEventListener("mousedown", onMousedown);
   }, []);
 
   return (

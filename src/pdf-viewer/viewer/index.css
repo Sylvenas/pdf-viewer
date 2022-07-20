@@ -1,10 +1,15 @@
 .pdf-view-container {
-  width: 600px;
-  height: 400px;
-  border: solid #999 1px;
+  width: 842px;
+  height: 595px;
+  cursor: grab;
 }
 
-.pdf-view-container .page .canvasWrapper {
+.pdf-view-container:active {
+  cursor: grabbing;
+}
+
+.pdf-view-container .page canvas {
+  border: solid #999 1px;
   /* border: solid #999 1px; */
 
   /* width: 800px !important;

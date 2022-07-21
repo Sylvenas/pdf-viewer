@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 // import * as PDFJS from "pdfjs-dist/build/pdf";
 import * as PDFJSViewer from "pdfjs-dist/web/pdf_viewer";
 import * as PDFJS from "pdfjs-dist/webpack";
-import { PDFCursorTools } from "pdfjs-dist/lib/web/pdf_cursor_tools";
+
 import "pdfjs-dist/web/pdf_viewer.css";
 import useFirstEffect from "../../hooks/useFirstEffect";
 import "./index.css";
@@ -11,6 +11,11 @@ import Control from "../control";
 import matrixExt from "../helper/matrix-ext";
 import pdfRender from "../helper/pdf-render";
 import * as math from "mathjs";
+
+// PDFJS.GlobalWorkerOptions.workerSrc =
+//   "https://cdn.bootcdn.net/ajax/libs/pdf.js/2.14.305/pdf.worker.js";
+
+// console.log(PDFJS);
 
 function calculateModelTransform(sheetModelBounds, pdfPageWidth) {
   var scale = pdfPageWidth / sheetModelBounds.width;
@@ -40,7 +45,7 @@ export default function Viewer() {
   const pdfPageViewRef = useRef(null);
   const pdfPageRef = useRef(null);
   const modelTransformRef = useRef(null);
-  const scaleRef = useRef(1);
+  const updating = useRef(false);
 
   const sheetBoundsRef = useRef({});
 
@@ -76,18 +81,19 @@ export default function Viewer() {
           // debugger;
           var transform = matrixZoomToFit();
           // debugger;
-          pdfRender.transformPdfPageView(
-            pdfPageRef.current,
-            pdfPageViewRef.current,
-            transform,
-            containerWidth,
-            containerHeight
-          );
-          // .then(() => {
-          //   setViewTransform(transform);
-          // });
+          pdfRender
+            .transformPdfPageView(
+              pdfPageRef.current,
+              pdfPageViewRef.current,
+              transform,
+              containerWidth,
+              containerHeight
+            )
+            .then(() => {
+              setViewTransform(transform);
+            });
 
-          pdfPageViewRef.current.draw();
+          // pdfPageViewRef.current.draw();
           // setViewTransform(transform);
         });
       },
@@ -196,22 +202,28 @@ export default function Viewer() {
   };
 
   const setViewTransform = (transform) => {
+    if (updating.current) return;
     if (!transform) return;
 
-    var incrementalTransform = math
-      .chain(math.inv(viewTransformRef.current))
-      .multiply(transform)
-      .done();
+    updating.current = true;
+    // var incrementalTransform = math
+    //   .chain(math.inv(viewTransformRef.current))
+    //   .multiply(transform)
+    //   .done();
 
     viewTransformRef.current = transform;
 
-    pdfRender.transformPdfPageView(
-      pdfPageRef.current,
-      pdfPageViewRef.current,
-      transform,
-      pdfPageViewRef.current.div.clientWidth,
-      pdfPageViewRef.current.div.clientHeight
-    );
+    pdfRender
+      .transformPdfPageView(
+        pdfPageRef.current,
+        pdfPageViewRef.current,
+        transform,
+        pdfPageViewRef.current.div.clientWidth,
+        pdfPageViewRef.current.div.clientHeight
+      )
+      .then(() => {
+        updating.current = false;
+      });
   };
 
   useEffect(() => {

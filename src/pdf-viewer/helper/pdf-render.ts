@@ -1,19 +1,13 @@
 // @ts-nocheck
 import matrixExt, { Box } from "./matrix-ext";
-// import "pdfjs-dist/build/pdf";
-// import "pdfjs-dist/web/pdf_viewer";
-// import PDFJS from "pdfjs-dist/webpack";
 import * as math from "mathjs";
 import * as PDFJSViewer from "pdfjs-dist/web/pdf_viewer";
-import * as PDFJS from "pdfjs-dist/webpack";
 import { PageViewport } from "pdfjs-dist/lib/display/display_utils";
-
-// console.log(PDFJSViewer, PDFJS);
 
 function createPdfRender() {
   return {
     createPdfPageView: function (pdfPage, toElement: HTMLElement, eventBus) {
-      debugger;
+      // debugger;
       var pdfPageView = new PDFJSViewer.PDFPageView({
         eventBus,
         container: toElement,
@@ -115,6 +109,7 @@ function createPdfRender() {
 
       // not work
       // pageView.update({ scale: scale.x, rotation });
+      // console.log(pageView.zoomLayer);
       pageView.reset({ keepZoomLayer: true });
       return pageView.draw();
     },

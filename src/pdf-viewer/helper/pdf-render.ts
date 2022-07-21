@@ -79,8 +79,8 @@ function createPdfRender() {
       var scale = matrixExt.getScale(viewMtx);
       // https://github.com/mozilla/pdf.js/issues/12980
 
-      console.log("pageView", pageView);
-      console.log("page", page.view);
+      // console.log("pageView", pageView);
+      // console.log("page", page.view);
 
       // page.view = pdfBox;
 
@@ -93,14 +93,17 @@ function createPdfRender() {
         dontFlip: false,
       });
 
-      console.log("canvasViewBox", canvasViewBox);
-      console.log("scale", scale);
-      console.log("pdfBox", pdfBox);
-      console.log("viewport", viewport);
+      viewport.width = 600;
+      viewport.height = 400;
+
+      // console.log("canvasViewBox", canvasViewBox);
+      // console.log("scale", scale);
+      // console.log("pdfBox", pdfBox);
+      console.log("viewport.width", viewport.width);
 
       pageView.viewport = viewport;
-
-      pageView.reset(false, false);
+      debugger;
+      pageView.reset(false, false, false);
       return pageView.draw();
     },
 

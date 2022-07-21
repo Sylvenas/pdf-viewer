@@ -29,8 +29,8 @@ function calculateModelTransform(sheetModelBounds, pdfPageWidth) {
 const pdfFileURL =
   "https://d1.music.126.net/dmusic/obj/w5zCg8OAw6HDjzjDgMK_/15834321051/c5d1/b45c/1805/651766d32ded09ad74166e24aa2cbed9.pdf?download=1.pdf";
 
-const containerWidth = 842;
-const containerHeight = 595;
+const containerWidth = 600;
+const containerHeight = 400;
 
 export default function Viewer() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -178,6 +178,7 @@ export default function Viewer() {
       pdfPageViewRef.current.div.clientHeight / 2,
       0,
     ];
+    // debugger;
     zoom(scale, fixPt);
   };
   const zoom = (scale, fixPt) => {
@@ -229,7 +230,7 @@ export default function Viewer() {
   useEffect(() => {
     let startX, startY;
     const onMousedown = (event) => {
-      // event.preventDefault();
+      event.preventDefault();
       startX = event.pageX;
       startY = event.pageY;
       document.body.addEventListener("mousemove", onMouseMove);
@@ -256,7 +257,9 @@ export default function Viewer() {
   return (
     <div>
       <Control zoomIn={zoomIn} center={center} zoomOut={zoomOut} />
-      <div className="pdf-view-container" ref={containerRef}></div>;
+      <div className="pdf-view-container" ref={containerRef}>
+        <div className="placeholder"></div>
+      </div>
     </div>
   );
 }

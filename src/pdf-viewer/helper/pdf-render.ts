@@ -13,6 +13,7 @@ import { PageViewport } from "pdfjs-dist/lib/display/display_utils";
 function createPdfRender() {
   return {
     createPdfPageView: function (pdfPage, toElement: HTMLElement, eventBus) {
+      debugger;
       var pdfPageView = new PDFJSViewer.PDFPageView({
         eventBus,
         container: toElement,
@@ -21,12 +22,14 @@ function createPdfRender() {
         defaultViewport: pdfPage.getViewport({ scale: 1 }),
         // textLayerFactory: new PDFJS.DefaultTextLayerFactory(),
         annotationLayerFactory: new PDFJSViewer.DefaultAnnotationLayerFactory(),
+        structTreeLayerFactory: new PDFJSViewer.DefaultStructTreeLayerFactory(),
       });
+      // debugger;
 
       pdfPageView.setPdfPage(pdfPage);
-
-      pdfPage.cleanup();
-
+      // pdfPageView.zoomLayer = document.querySelector(".page");
+      // pdfPage.cleanup();
+      console.log("pdfPageView", pdfPageView);
       return pdfPageView;
     },
 
@@ -99,38 +102,23 @@ function createPdfRender() {
       // console.log("canvasViewBox", canvasViewBox);
       // console.log("scale", scale);
       // console.log("pdfBox", pdfBox);
-      console.log("viewport.width", viewport.width);
+      // console.log("viewport.width", viewport.width);
 
       pageView.viewport = viewport;
-      debugger;
-      pageView.reset(false, false, false);
+      // console.log(pageView);
+      // debugger;
+
+      let canvas = document.querySelector("canvas");
+      if (canvas) {
+        pageView.zoomLayer = document.querySelector(".canvasWrapper");
+      }
+
+      // pageView.update({ scale: 1 });
+      pageView.reset({ keepZoomLayer: true });
       return pageView.draw();
     },
 
     //Deprecated: transform with scale limitation
-    transformPdfPageView2: function (
-      pageView,
-      transform,
-      canvasWidth,
-      canvasHeight
-    ) {
-      // TODO: update the pdf page view's viewport, so that we only render the displayed part of pdf view.
-      var cssUnitsFactor = 96.0 / 72.0;
-      var cssUnitsMtx = matrixExt.fromScale(
-        1 / cssUnitsFactor,
-        1 / cssUnitsFactor
-      );
-      var mtx = math.multiply(cssUnitsMtx, transform);
-
-      var scale = matrixExt.getScale(mtx);
-      pageView.update(scale.x);
-
-      var offset = matrixExt.getTranslate(mtx);
-      pageView.div.style.left = offset.x + "px";
-      pageView.div.style.top = offset.y + "px";
-
-      return pageView.draw();
-    },
 
     centerOfBox: function (box: Box) {
       return [(box[2] - box[0]) / 2, (box[3] - box[1]) / 2];

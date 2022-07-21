@@ -46,6 +46,8 @@ export default function Viewer() {
   const pdfPageRef = useRef(null);
   const modelTransformRef = useRef(null);
   const updating = useRef(false);
+  const tickRef = useRef(0);
+  const countRef = useRef(null);
 
   const sheetBoundsRef = useRef({});
 
@@ -202,6 +204,8 @@ export default function Viewer() {
   };
 
   const setViewTransform = (transform) => {
+    tickRef.current = tickRef.current + 1;
+    countRef.current.innerHTML = tickRef.current;
     if (updating.current) return;
     if (!transform) return;
 
@@ -229,7 +233,7 @@ export default function Viewer() {
   useEffect(() => {
     const onWheel = (event) => {
       const zoomIn = event.deltaY < 0;
-      var scale = zoomIn ? 1 / 0.97 : 0.97;
+      var scale = zoomIn ? 1 / 0.95 : 0.95;
       var fixPt = [event.offsetX, event.offsetY, 0];
       zoom(scale, fixPt);
       event.preventDefault();
@@ -272,6 +276,7 @@ export default function Viewer() {
 
   return (
     <div>
+      <p id="count" ref={countRef}></p>
       <Control zoomIn={zoomIn} center={center} zoomOut={zoomOut} />
       <div className="pdf-view-container" ref={containerRef}>
         <div className="placeholder"></div>

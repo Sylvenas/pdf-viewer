@@ -110,6 +110,7 @@ function createPdfRender() {
       // not work
       // pageView.update({ scale: scale.x, rotation });
       // console.log(pageView.zoomLayer);
+      debugger;
       pageView.reset({ keepZoomLayer: true });
       return pageView.draw();
     },

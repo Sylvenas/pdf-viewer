@@ -113,7 +113,8 @@ function createPdfRender() {
         pageView.zoomLayer = document.querySelector(".canvasWrapper");
       }
 
-      // pageView.update({ scale: 1 });
+      // not work
+      // pageView.update({ scale: scale.x, rotation });
       pageView.reset({ keepZoomLayer: true });
       return pageView.draw();
     },

@@ -11,6 +11,7 @@ import Control from "../control";
 import matrixExt from "../helper/matrix-ext";
 import pdfRender from "../helper/pdf-render";
 import * as math from "mathjs";
+import pdffile from "./1.pdf";
 
 // PDFJS.GlobalWorkerOptions.workerSrc =
 //   "https://cdn.bootcdn.net/ajax/libs/pdf.js/2.14.305/pdf.worker.js";
@@ -200,16 +201,17 @@ export default function Viewer() {
 
   const updateView = (transform) => {
     var t = !transform ? matrixExt.identity() : transform;
-    setViewTransform(math.multiply(viewTransformRef.current, t));
+    setTimeout(() => {
+      setViewTransform(math.multiply(viewTransformRef.current, t));
+    });
   };
 
   const setViewTransform = (transform) => {
-    tickRef.current = tickRef.current + 1;
-    countRef.current.innerHTML = tickRef.current;
+    // tickRef.current = tickRef.current + 1;
+    // countRef.current.innerHTML = tickRef.current;
     if (updating.current) return;
     if (!transform) return;
 
-    updating.current = true;
     // var incrementalTransform = math
     //   .chain(math.inv(viewTransformRef.current))
     //   .multiply(transform)
@@ -249,6 +251,8 @@ export default function Viewer() {
 
   useEffect(() => {
     let startX, startY;
+    let delayX = 0,
+      delayY = 0;
     const onMousedown = (event) => {
       event.preventDefault();
       startX = event.pageX;
@@ -266,10 +270,16 @@ export default function Viewer() {
       var deltaX = event.pageX - startX;
       var deltaY = event.pageY - startY;
 
+      // if (updating.current) {
+      //   delayX = deltaX;
+      //   delayY = deltaY;
+      //   return;
+      // }
       translate(deltaX, deltaY);
-
       startX = event.pageX;
       startY = event.pageY;
+      // delayX = 0;
+      // delayY = 0;
     };
     containerRef.current?.addEventListener("mousedown", onMousedown);
   }, []);

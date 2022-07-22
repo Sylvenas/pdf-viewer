@@ -11,6 +11,7 @@ body {
   height: 400px;
   cursor: grab;
   background-color: #fff;
+  overflow: hidden;
 }
 
 .placeholder {

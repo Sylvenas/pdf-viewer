@@ -55,7 +55,7 @@ export default function Viewer() {
   useFirstEffect(() => {
     if (!containerRef.current) return;
 
-    var loadingTask = PDFJS.getDocument(pdfFileURL);
+    var loadingTask = PDFJS.getDocument(pdffile);
     loadingTask.promise.then(
       (pdfDocument) => {
         pdfDocument.getPage(1).then(function (pdfPage) {
@@ -201,9 +201,20 @@ export default function Viewer() {
 
   const updateView = (transform) => {
     var t = !transform ? matrixExt.identity() : transform;
+    // Maybe requestIdleCallback is a better solution
+    // However, Appl Safari does not support this API, and introducing polyfill will lead to more complexity than it's worth
     setTimeout(() => {
       setViewTransform(math.multiply(viewTransformRef.current, t));
     });
+    // if ("requestIdleCallback" in window) {
+    //   requestIdleCallback(() => {
+    //     setViewTransform(math.multiply(viewTransformRef.current, t));
+    //   });
+    // } else {
+    //   setTimeout(() => {
+    //     setViewTransform(math.multiply(viewTransformRef.current, t));
+    //   });
+    // }
   };
 
   const setViewTransform = (transform) => {

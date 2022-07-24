@@ -15,8 +15,8 @@ function createPdfRender() {
         scale: 1,
         defaultViewport: pdfPage.getViewport({ scale: 1 }),
         // textLayerFactory: new PDFJS.DefaultTextLayerFactory(),
-        annotationLayerFactory: new PDFJSViewer.DefaultAnnotationLayerFactory(),
-        structTreeLayerFactory: new PDFJSViewer.DefaultStructTreeLayerFactory(),
+        // annotationLayerFactory: new PDFJSViewer.DefaultAnnotationLayerFactory(),
+        // structTreeLayerFactory: new PDFJSViewer.DefaultStructTreeLayerFactory(),
       });
       // debugger;
 

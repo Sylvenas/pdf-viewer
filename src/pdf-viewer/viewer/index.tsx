@@ -202,7 +202,7 @@ export default function Viewer() {
   const updateView = (transform) => {
     var t = !transform ? matrixExt.identity() : transform;
     // Maybe requestIdleCallback is a better solution
-    // However, Appl Safari does not support this API, and introducing polyfill will lead to more complexity than it's worth
+    // However, Apple Safari does not support this API, and introducing polyfill will lead to more complexity than it's worth
     setTimeout(() => {
       setViewTransform(math.multiply(viewTransformRef.current, t));
     });
